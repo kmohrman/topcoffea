@@ -357,13 +357,13 @@ class AnalysisProcessor(processor.ProcessorABC):
         nMuon4l = ak.num(mu4l)
 
         # Triggers
-        trig_eeSS = passTrigger(events,'ee',isData,dataset)
-        trig_mmSS = passTrigger(events,'mm',isData,dataset)
-        trig_emSS = passTrigger(events,'em',isData,dataset)
-        trig_eee  = passTrigger(events,'eee',isData,dataset)
-        trig_mmm  = passTrigger(events,'mmm',isData,dataset)
-        trig_eem  = passTrigger(events,'eem',isData,dataset)
-        trig_mme  = passTrigger(events,'mme',isData,dataset)
+        trig_eeSS = passTrigger(events,'ee',year,isData,dataset)
+        trig_mmSS = passTrigger(events,'mm',year,isData,dataset)
+        trig_emSS = passTrigger(events,'em',year,isData,dataset)
+        trig_eee  = passTrigger(events,'eee',year,isData,dataset)
+        trig_mmm  = passTrigger(events,'mmm',year,isData,dataset)
+        trig_eem  = passTrigger(events,'eem',year,isData,dataset)
+        trig_mme  = passTrigger(events,'mme',year,isData,dataset)
         trig_4l   = triggerFor4l(events, nMuon, nElec, isData, dataset)
 
         # MET filters
