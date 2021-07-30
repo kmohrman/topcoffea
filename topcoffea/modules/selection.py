@@ -290,11 +290,8 @@ def passTrigger(df, cat, year, isData=False, dataName=''):
   if not isData: 
     paths = triggersForFinalState[cat]['MC'][year.__str__()]
     for path in paths:
-      try:
-        tpass = tpass | df[path]
-      except ValueError:
-        print("Warning! Trigger not in data. Skipping...")
-        print(path)
+      tpass = tpass | df[path]
+
       
   else:
     passTriggers    = triggersForFinalState[cat][dataName][date.__str__()] if dataName in triggersForFinalState[cat].keys() else []
