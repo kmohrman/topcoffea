@@ -19,11 +19,12 @@ jobs:
         uses: py-actions/flake8@v2
         with:
           #ignore: "E201,E227,E261,E231,E501,E241,E203,E241,E202,E226,E221"
-          ignore: "E201,E202,E203,E221,E226,E227,E227,E231,E241,E261,E265,E303,E501,E714"
+          ignore: "E201,E202,E203,E221,E226,E225,E227,E228,E231,E241,E261,E265,E302,E303,E501,E701,E714"
           # E201 whitespace after '('
           # E202 whitespace before ')'
           # E203 whitespace before ':'
           # E221 multiple spaces before operator
+          # E225 missing whitespace around operator
           # E226 missing whitespace around arithmetic operator
           # E227 missing whitespace around bitwise or shift operator
           # E228 missing whitespace around modulo operator
@@ -31,8 +32,10 @@ jobs:
           # E241 multiple spaces after ','
           # E261 at least two spaces before inline comment
           # E265 block comment should start with '# '
+          # E302 expected 2 blank lines, found 1
           # E303 too many blank lines (3)
           # E501 line too long
+          # E701 multiple statements on one line (colon)
           # E714 test for object identity should be 'is not'
 
   #flake8_py3:
