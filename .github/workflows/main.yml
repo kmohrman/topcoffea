@@ -18,7 +18,10 @@ jobs:
       - name: flake8 Lint
         uses: py-actions/flake8@v2
         with:
-          ignore: "E231,E501,E241,E203,E241,E202,E226"
+          ignore: "E201,E227,E261,E231,E501,E241,E203,E241,E202,E226,E221"
+          # E201 whitespace after '('
+          # E227 missing whitespace around bitwise or shift operator
+          # E261 at least two spaces before inline comment
           # E231
           # E501 line too long
           # E241 multiple spaces after
@@ -26,6 +29,7 @@ jobs:
           # E241 multiple spaces after ','
           # E202 whitespace before ')'
           # E226 missing whitespace around arithmetic operator
+          # E221 multiple spaces before operator
 
           #select: "E111"
           #ignore:
