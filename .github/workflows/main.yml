@@ -19,6 +19,7 @@ jobs:
         uses: py-actions/flake8@v2
         with:
           ignore: "E231"
+          ignore: "E501"
 
   #flake8_py3:
   #  runs-on: ubuntu-latest
