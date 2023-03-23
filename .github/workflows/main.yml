@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-python@v1
       - name: flake8 Lint
         uses: py-actions/flake8@v2
-      - with:
+        with:
           ignore: "E231"
 
   #flake8_py3:
