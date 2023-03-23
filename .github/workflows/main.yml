@@ -21,10 +21,10 @@ jobs:
           #ignore: "E231,E501"
           #select: "E111"
           ignore:
-          "
+            "
             E231,
             E501
-          "
+            "
 
   #flake8_py3:
   #  runs-on: ubuntu-latest
