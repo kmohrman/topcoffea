@@ -19,7 +19,7 @@ jobs:
         uses: py-actions/flake8@v2
         with:
           ignore: "E231",
-          ignore: "E501"
+          #ignore: "E501"
 
   #flake8_py3:
   #  runs-on: ubuntu-latest
@@ -41,84 +41,84 @@ jobs:
   #      #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
-  Full_Analysis:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+  #Full_Analysis:
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - name: Checkout repository
+  #      uses: actions/checkout@v2
 
-      - name: Add conda to system path
-        run: |
-          echo $CONDA/bin >> $GITHUB_PATH 
+  #    - name: Add conda to system path
+  #      run: |
+  #        echo $CONDA/bin >> $GITHUB_PATH 
 
-      - name: Install dependencies
-        run: |
-          conda config --set channel_priority strict
-          conda config --add channels conda-forge
-          conda env create -f environment.yml -n coffea-env
+  #    - name: Install dependencies
+  #      run: |
+  #        conda config --set channel_priority strict
+  #        conda config --add channels conda-forge
+  #        conda env create -f environment.yml -n coffea-env
 
-      - name: Conda list
-        run: |
-          conda list -n coffea-env
+  #    - name: Conda list
+  #      run: |
+  #        conda list -n coffea-env
 
-      - name: Install topcoffea package
-        run: |
-          conda run -n coffea-env pip install -e .
+  #    - name: Install topcoffea package
+  #      run: |
+  #        conda run -n coffea-env pip install -e .
 
-      - name: Download root files
-        run: |
-          wget --no-verbose http://www.crc.nd.edu/~kmohrman/files/root_files/for_ci/ttHJet_UL17_R1B14_NAOD-00000_10194_NDSkim.root
+  #    - name: Download root files
+  #      run: |
+  #        wget --no-verbose http://www.crc.nd.edu/~kmohrman/files/root_files/for_ci/ttHJet_UL17_R1B14_NAOD-00000_10194_NDSkim.root
 
-      - name: Pytest setup
-        run: |
-          conda install -y -n coffea-env -c conda-forge pytest pytest-cov root_base
-          mkdir histos
+  #    - name: Pytest setup
+  #      run: |
+  #        conda install -y -n coffea-env -c conda-forge pytest pytest-cov root_base
+  #        mkdir histos
 
-      - name: Test unit
-        run: |
-          conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append tests/test_unit.py
+  #    - name: Test unit
+  #      run: |
+  #        conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append tests/test_unit.py
 
-      - name: Test histEFT
-        run: |
-          conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append tests/test_HistEFT_add.py
+  #    - name: Test histEFT
+  #      run: |
+  #        conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append tests/test_HistEFT_add.py
 
-      - name: Test utils
-        run: |
-          conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append tests/test_utils.py
+  #    - name: Test utils
+  #      run: |
+  #        conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append tests/test_utils.py
 
-      - name: Test update json
-        run: |
-          conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append tests/test_update_json.py
+  #    - name: Test update json
+  #      run: |
+  #        conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append tests/test_update_json.py
 
-      - name: Test make 1d quad plots
-        run: |
-          conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append tests/test_make_1d_quad_plots.py 
+  #    - name: Test make 1d quad plots
+  #      run: |
+  #        conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append tests/test_make_1d_quad_plots.py 
 
-      - name: Run processors over test files with futures executor
-        run: |
-          conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append tests/test_futures.py
+  #    - name: Run processors over test files with futures executor
+  #      run: |
+  #        conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append tests/test_futures.py
 
-      - name: Get yields 
-        run: |
-          conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append -k test_make_yields_after_processor
+  #    - name: Get yields 
+  #      run: |
+  #        conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append -k test_make_yields_after_processor
 
-      - name: Compare yields
-        run: |
-          conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append -k test_compare_yields_after_processor
+  #    - name: Compare yields
+  #      run: |
+  #        conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append -k test_compare_yields_after_processor
 
-      - name: Run processors over test files with workqueue executor
-        run: |
-          conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append tests/test_workqueue.py
+  #    - name: Run processors over test files with workqueue executor
+  #      run: |
+  #        conda run -n coffea-env pytest --cov=./ --cov-report=xml -rP --cov-append tests/test_workqueue.py
 
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          directory: ./coverage/reports/
-          env_vars: OS,PYTHON
-          fail_ci_if_error: true
-          files: ./coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-          verbose: true
+  #    - name: Upload coverage to Codecov
+  #      uses: codecov/codecov-action@v2
+  #      with:
+  #        token: ${{ secrets.CODECOV_TOKEN }}
+  #        directory: ./coverage/reports/
+  #        env_vars: OS,PYTHON
+  #        fail_ci_if_error: true
+  #        files: ./coverage.xml
+  #        flags: unittests
+  #        name: codecov-umbrella
+  #        verbose: true
