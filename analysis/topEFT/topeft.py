@@ -404,7 +404,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             addLepCatMasks(events)
 
             # Convenient to have l0, l1, l2 on hand
-            l_fo_conept_sorted_padded = ak.pad_none(l_fo_conept_sorted, 3)
+            l_fo_conept_sorted_padded = ak.pad_none(l_fo_conept_sorted, 4)
             l0 = l_fo_conept_sorted_padded[:,0]
             l1 = l_fo_conept_sorted_padded[:,1]
             l2 = l_fo_conept_sorted_padded[:,2]
@@ -486,6 +486,13 @@ class AnalysisProcessor(processor.ProcessorABC):
             sfosz_3l_mask = get_Z_peak_mask(l_fo_conept_sorted_padded[:,0:3],pt_window=10.0)
             sfosz_2l_mask = get_Z_peak_mask(l_fo_conept_sorted_padded[:,0:2],pt_window=10.0)
             sfasz_2l_mask = get_Z_peak_mask(l_fo_conept_sorted_padded[:,0:2],pt_window=30.0,flavor="as") # Any sign (do not enforce ss or os here)
+
+            ########################
+            # Testing getting the z and w candidates for wwz selection
+
+            x = get_wwz_mask(l_fo_conept_sorted_padded[:,0:4])
+
+            ########################
 
             # Pass trigger mask
             pass_trg = trgPassNoOverlap(events,isData,dataset,str(year))
