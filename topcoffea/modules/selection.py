@@ -444,7 +444,12 @@ def get_Z_pt(lep_collection,pt_window):
     return ak.flatten(pt_of_sfosz)
 
 
-def get_wwz_mask(lep_collection):
+################### WWZ stuff ###################
+
+# Takes as input the lep collection
+# Finds SFOS pair that is closest to the Z peak
+# Returns object level mask with "True" for the leptons that are part of the Z candidate and False for others
+def get_z_candidate_mask(lep_collection):
 
     for i,l in enumerate(lep_collection):
         print(i,l.pt)
@@ -470,24 +475,48 @@ def get_wwz_mask(lep_collection):
     mask = (mask | (lep_collection.idx == ak.flatten(ll_pairs_idx.l1[sfos_pair_closest_to_z_idx])))
     mask = ak.fill_none(mask, False)
 
+    return mask
+
+# Get the pair of leptons that are the Z candidate, and the W candidate leptons
+# Basicially this function is convenience wrapper around get_z_candidate_mask()
+def get_wwz_candidates(lep_collection):
+
+    z_candidate_mask = get_z_candidate_mask(lep_collection)
+
     # Now we can grab the Z candidate leptons and the non-Z candidate leptons
-    leps_from_z_candidate = lep_collection[mask]
-    leps_not_z_candidate = lep_collection[~mask]
+    leps_from_z_candidate = lep_collection[z_candidate_mask]
+    leps_not_z_candidate = lep_collection[~z_candidate_mask]
 
-    print("mask",mask)
-    for i,x in enumerate(mask):
-        print(i,x)
-
-    print("\nleps_from_z_candidate",leps_from_z_candidate)
-    for i,x in enumerate(leps_from_z_candidate):
-        print(i)
-        if x is not None: print(x.pt)
-
-    print("\nleps_from_z_candidate",leps_not_z_candidate)
-    for i,x in enumerate(leps_not_z_candidate):
-        print(i)
-        if x is not None: print(x.pt)
-
-    print("this")
+    leps_from_z_candidate_ptordered = leps_from_z_candidate[ak.argsort(leps_from_z_candidate.conept, axis=-1,ascending=False)]
+    leps_not_z_candidate_ptordered  = leps_not_z_candidate[ak.argsort(leps_not_z_candidate.conept, axis=-1,ascending=False)]
 
     return [leps_from_z_candidate,leps_not_z_candidate]
+
+
+# Do WWZ pre selection, construct event level mask
+# Convenience function around get_wwz_candidates() and get_z_candidate_mask()
+def get_wwz_preselection_mask(lep_collection):
+
+    leps_from_z_candidate_ptordered, leps_not_z_candidate_ptordered = get_wwz_candidates(lep_collection)
+
+    # Build pt mask for z and w candidates
+    pt_mask_z_0_25 = ak.any((leps_from_z_candidate_ptordered[:,0:1].conept > 25.0),axis=1)
+    pt_mask_z_1_15 = ak.any((leps_from_z_candidate_ptordered[:,1:2].conept > 15.0),axis=1)
+    pt_mask_non_z_0_25 = ak.any((leps_not_z_candidate_ptordered[:,0:1].conept > 25.0),axis=1)
+    pt_mask_non_z_1_15 = ak.any((leps_not_z_candidate_ptordered[:,1:2].conept > 15.0),axis=1)
+    pt_mask = pt_mask_z_0_25 & pt_mask_z_1_15 & pt_mask_non_z_0_25 & pt_mask_non_z_1_15
+    pt_mask = ak.fill_none(pt_mask,False)
+
+    # Build mask for OS requirements for the W candidates
+    os_mask = ak.any(((leps_not_z_candidate_ptordered[:,0:1].pdgId)*(leps_not_z_candidate_ptordered[:,1:2].pdgId)<0),axis=1) # Use ak.any() here so that instead of e.g [[None],None,...] we have [False,None,...]
+    os_mask = ak.fill_none(os_mask,False) # Replace the None with False in the mask just to make it easier to think about
+
+    # Build a mask that checks if the z candidates are close enough to the z
+    z_mass = (leps_from_z_candidate_ptordered[:,0:1]+leps_from_z_candidate_ptordered[:,1:2]).mass
+    z_mass_mask = (abs((leps_from_z_candidate_ptordered[:,0:1]+leps_from_z_candidate_ptordered[:,1:2]).mass-91.2) < 10.0)
+    z_mass_mask = ak.fill_none(ak.any(z_mass_mask,axis=1),False) # Make sure None entries are false
+
+    # The final mask
+    mask = (pt_mask & os_mask & z_mass_mask)
+
+    return mask

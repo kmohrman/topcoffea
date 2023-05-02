@@ -490,7 +490,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             ########################
             # Testing getting the z and w candidates for wwz selection
 
-            x = get_wwz_mask(l_fo_conept_sorted_padded[:,0:4])
+            x = get_wwz_preselection_mask(l_fo_conept_sorted_padded[:,0:4])
 
             ########################
 
