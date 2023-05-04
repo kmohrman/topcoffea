@@ -149,7 +149,7 @@ exclude_dict = {
 #   - Takes events objects, and a lits of triggers
 #   - Returns an array the same length as events, elements are true if the event passed at least one of the triggers and false otherwise
 def passesTrgInLst(events,trg_name_lst):
-    tpass = np.zeros_like(np.array(events.MET.pt), dtype=np.bool)
+    tpass = np.zeros_like(np.array(events.MET.pt), dtype=bool)
     trg_info_dict = events.HLT
 
     # "fields" should be list of all triggers in the dataset
@@ -174,8 +174,8 @@ def trgPassNoOverlap(events,is_data,dataset,year):
         year = "2016"
 
     # Initialize ararys and lists, get trg pass info from events
-    trg_passes    = np.zeros_like(np.array(events.MET.pt), dtype=np.bool) # Array of False the len of events
-    trg_overlaps  = np.zeros_like(np.array(events.MET.pt), dtype=np.bool) # Array of False the len of events
+    trg_passes    = np.zeros_like(np.array(events.MET.pt), dtype=bool) # Array of False the len of events
+    trg_overlaps  = np.zeros_like(np.array(events.MET.pt), dtype=bool) # Array of False the len of events
     trg_info_dict = events.HLT
     full_trg_lst  = []
 
@@ -450,9 +450,6 @@ def get_Z_pt(lep_collection,pt_window):
 # Finds SFOS pair that is closest to the Z peak
 # Returns object level mask with "True" for the leptons that are part of the Z candidate and False for others
 def get_z_candidate_mask(lep_collection):
-
-    for i,l in enumerate(lep_collection):
-        print(i,l.pt)
 
     # Attach the local index to the lepton objects
     lep_collection['idx'] = ak.local_index(lep_collection, axis=1)
