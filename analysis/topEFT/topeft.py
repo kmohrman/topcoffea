@@ -408,6 +408,7 @@ class AnalysisProcessor(processor.ProcessorABC):
             l0 = l_fo_conept_sorted_padded[:,0]
             l1 = l_fo_conept_sorted_padded[:,1]
             l2 = l_fo_conept_sorted_padded[:,2]
+            l3 = l_fo_conept_sorted_padded[:,3]
 
 
             ######### Event weights that do not depend on the lep cat ##########
@@ -488,10 +489,141 @@ class AnalysisProcessor(processor.ProcessorABC):
             sfasz_2l_mask = get_Z_peak_mask(l_fo_conept_sorted_padded[:,0:2],pt_window=30.0,flavor="as") # Any sign (do not enforce ss or os here)
 
             ########################
-            # Testing getting the z and w candidates for wwz selection
+            ########################
+            ########################
+            # Testing getting the z and w candidates for wwz selection WWZ
 
-            x = get_wwz_preselection_mask(l_fo_conept_sorted_padded[:,0:4])
+            attach_wwz_preselection_mask(events,l_fo_conept_sorted_padded[:,0:4])
+            leps_from_z_candidate_ptordered, leps_not_z_candidate_ptordered = get_wwz_candidates(l_fo_conept_sorted_padded[:,0:4])
 
+            w_candidates_mll = (leps_not_z_candidate_ptordered[:,0:1]+leps_not_z_candidate_ptordered[:,1:2]).mass
+            w_candidates_mll_far_from_z = ak.fill_none(ak.any((abs(w_candidates_mll - 91.2) > 10.0),axis=1),False)
+
+            ptl4 = (l0+l1+l2+l3).pt
+            sf_A = (met.pt > 120.0)
+            sf_B = ((met.pt > 70.0) & (met.pt < 120.0) & (ptl4 > 70.0))
+            sf_C = ((met.pt > 70.0) & (met.pt < 120.0) & (ptl4 > 40.0) & (ptl4 < 70.0))
+
+            of_1 = ak.fill_none(ak.any((w_candidates_mll > 0.0) & (w_candidates_mll < 40.0),axis=1),False)
+            of_2 = ak.fill_none(ak.any((w_candidates_mll > 40.0) & (w_candidates_mll < 60.0),axis=1),False)
+            of_3 = ak.fill_none(ak.any((w_candidates_mll > 60.0) & (w_candidates_mll < 100.0),axis=1),False)
+            of_4 = ak.fill_none(ak.any((w_candidates_mll > 100.0),axis=1),False)
+
+
+            ### Trying to get mt2
+            #print("pt",leps_not_z_candidate_ptordered.pt)
+            #print("px",leps_not_z_candidate_ptordered.px)
+            #print("py",leps_not_z_candidate_ptordered.py)
+            #print("mass",leps_not_z_candidate_ptordered.mass)
+            #print("MET",met.px)
+            #print("MET",met.py)
+            #print("0s",np.zeros_like(events['event']))
+
+            #w_lep0 = leps_not_z_candidate_ptordered[:,0:1]
+            #w_lep1 = leps_not_z_candidate_ptordered[:,1:2]
+
+            #print("w_lep0",w_lep0.pt)
+            #print("w_lep0.pz,w_lep0.px",w_lep0.pz,w_lep0.px)
+
+            ## TEst boost
+            #rest_WW = w_lep0 + w_lep1 + met
+            #print("rest_WW",rest_WW)
+            #for i,x in enumerate(rest_WW):
+            #    print(i,x,type(x))
+            #print("past this!!!")
+            ##beta_from_miss_reverse = rest_WW.boostvec
+            ##beta_from_miss_reverse = (w_lep0+w_lep1).boostvec
+            #print("met phi",met.phi)
+            #print("met pt",met.pt)
+            #print("met type",type(met))
+            #print("lep type",type(w_lep0))
+            #print("lep type + ",type(w_lep0 + w_lep1))
+            #print("lep met type + ",type(w_lep0 + w_lep1 + met))
+            #print("lep type add ",type(w_lep0.add(w_lep1)))
+            #ll = w_lep0.add(w_lep1)
+            #print("this")
+            ##beta_from_miss_reverse = (met).boostvec
+            ##print("beta_from_miss_reverse",beta_from_miss_reverse)
+            ##print("past this!!!")
+            ##exit()
+
+            #from mt2 import mt2
+            #mt2_var = mt2(
+            #    w_lep0.mass, w_lep0.px, w_lep0.py,
+            #    w_lep1.mass, w_lep1.px, w_lep1.py,
+            #    met.px, met.py,
+            #    np.zeros_like(events['event']), np.zeros_like(events['event']),
+            #)
+
+            #test_142 = mt2(
+            #    -0.0612,162,-80,
+            #    -0.047,-5.87,-31.5,
+            #    -202.6769847192207,206.4343185321238,
+            #    0,0,
+            #)
+
+            #test_255 = mt2(
+            #    0.106,262,-155,
+            #    0.106,12.2,66.4,
+            #    280.18764540073647,49.06672520867423,
+            #    0,0
+            #)
+
+            #test_gh = mt2(
+            #    0,-42.017340486,-146.365340528,
+            #    0.087252259,-9.625614206,145.757295514,
+            #    -16.692279406,-14.730240471,
+            #    0,0
+            #)
+
+            ##jfor i,x in enumerate(np.zeros_like(events['event'])):
+            ##j    print("i",i)
+            ##j    print("\t l pt",l_fo_conept_sorted_padded[i].pt)
+            ##j    print("\t l px",l_fo_conept_sorted_padded[i].px)
+            ##j    print("\t l ms",l_fo_conept_sorted_padded[i].mass)
+            ##j    print("\t m pt",m_fo[i].pt)
+            ##j    print("\t m px",m_fo[i].px)
+            ##j    print("\t m ms",m_fo[i].mass)
+            ##j    print("\t e pt",e_fo[i].pt)
+            ##j    print("\t e px",e_fo[i].px)
+            ##j    print("\t e ms",e_fo[i].mass)
+
+            #print("test 142",test_142)
+            #print("test 255",test_255)
+            #print("test gh ",test_gh)
+            #print("there")
+
+            #for i,x in enumerate(np.zeros_like(events['event'])):
+            #    print("i",i)
+            #    if w_lep1[i] is not None:
+            #        print("\t","w_lep0.mass",w_lep0[i].mass)
+            #        print("\t","w_lep0.px",w_lep0[i].px)
+            #        print("\t","w_lep0.py",w_lep0[i].py)
+            #        print("\t","w_lep0.pz",w_lep0[i].pz)
+            #        print("\t","w_lep1.mass",w_lep1[i].mass)
+            #        print("\t","w_lep1.px",w_lep1[i].px)
+            #        print("\t","w_lep1.py",w_lep1[i].py)
+            #        print("\t","w_lep1.pz",w_lep1[i].pz)
+            #        print("\t","met.px",met[i].px)
+            #        print("\t","met.py",met[i].py)
+            #        print("\t","x",mt2_var[i])
+            #        print("\t","w_lep0.energy" ,w_lep0[i].energy)
+            #        print("\t","w_lep0.pt" ,w_lep0[i].pt)
+            #        print("\t","w_lep0.eta",w_lep0[i].eta)
+            #        print("\t","w_lep0.phi",w_lep0[i].phi)
+            #        print("\t","w_lep1.energy" ,w_lep1[i].energy)
+            #        print("\t","w_lep1.pt" ,w_lep1[i].pt)
+            #        print("\t","w_lep1.eta",w_lep1[i].eta)
+            #        print("\t","w_lep1.phi",w_lep1[i].phi)
+            #        print("\t","met",met[i].pt)
+            #        print("\t","met.phi",met[i].phi)
+
+
+            #print("this")
+            ##exit()
+
+            ########################
+            ########################
             ########################
 
             # Pass trigger mask
@@ -549,6 +681,15 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             # 4l selection
             selections.add("4l", (events.is4l & bmask_atleast1med_atleast2loose & pass_trg))
+
+            # For WWZ selection
+            selections.add("4l_wwz_sf_A", (events.is4l & bmask_exactly0med & pass_trg & events.wwz_presel_sf & w_candidates_mll_far_from_z & sf_A))
+            selections.add("4l_wwz_sf_B", (events.is4l & bmask_exactly0med & pass_trg & events.wwz_presel_sf & w_candidates_mll_far_from_z & sf_B))
+            selections.add("4l_wwz_sf_C", (events.is4l & bmask_exactly0med & pass_trg & events.wwz_presel_sf & w_candidates_mll_far_from_z & sf_C))
+            selections.add("4l_wwz_of_1", (events.is4l & bmask_exactly0med & pass_trg & events.wwz_presel_of & of_1))
+            selections.add("4l_wwz_of_2", (events.is4l & bmask_exactly0med & pass_trg & events.wwz_presel_of & of_2))
+            selections.add("4l_wwz_of_3", (events.is4l & bmask_exactly0med & pass_trg & events.wwz_presel_of & of_3))
+            selections.add("4l_wwz_of_4", (events.is4l & bmask_exactly0med & pass_trg & events.wwz_presel_of & of_4))
 
             # Lep flavor selection
             selections.add("ee",  events.is_ee)
@@ -654,58 +795,58 @@ class AnalysisProcessor(processor.ProcessorABC):
 
             # This dictionary keeps track of which selections go with which SR categories
             sr_cat_dict = {
-              "2l" : {
-                  "exactly_4j" : {
-                      "lep_chan_lst" : ["2lss_p" , "2lss_m", "2lss_4t_p", "2lss_4t_m"],
-                      "lep_flav_lst" : ["ee" , "em" , "mm"],
-                      "appl_lst"     : ["isSR_2lSS" , "isAR_2lSS"] + (["isAR_2lSS_OS"] if isData else []),
-                  },
-                  "exactly_5j" : {
-                      "lep_chan_lst" : ["2lss_p" , "2lss_m", "2lss_4t_p", "2lss_4t_m"],
-                      "lep_flav_lst" : ["ee" , "em" , "mm"],
-                      "appl_lst"     : ["isSR_2lSS" , "isAR_2lSS"] + (["isAR_2lSS_OS"] if isData else []),
-                  },
-                  "exactly_6j" : {
-                      "lep_chan_lst" : ["2lss_p" , "2lss_m", "2lss_4t_p", "2lss_4t_m"],
-                      "lep_flav_lst" : ["ee" , "em" , "mm"],
-                      "appl_lst"     : ["isSR_2lSS" , "isAR_2lSS"] + (["isAR_2lSS_OS"] if isData else []),
-                  },
-                  "atleast_7j" : {
-                      "lep_chan_lst" : ["2lss_p" , "2lss_m", "2lss_4t_p", "2lss_4t_m"],
-                      "lep_flav_lst" : ["ee" , "em" , "mm"],
-                      "appl_lst"     : ["isSR_2lSS" , "isAR_2lSS"] + (["isAR_2lSS_OS"] if isData else []),
-                  },
-              },
-              "3l" : {
-                  "exactly_2j" : {
-                      "lep_chan_lst" : [
-                          "3l_p_offZ_1b" , "3l_m_offZ_1b" , "3l_p_offZ_2b" , "3l_m_offZ_2b" , "3l_onZ_1b" , "3l_onZ_2b",
-                      ],
-                      "lep_flav_lst" : ["eee" , "eem" , "emm", "mmm"],
-                      "appl_lst"     : ["isSR_3l", "isAR_3l"],
-                  },
-                  "exactly_3j" : {
-                      "lep_chan_lst" : [
-                          "3l_p_offZ_1b" , "3l_m_offZ_1b" , "3l_p_offZ_2b" , "3l_m_offZ_2b" , "3l_onZ_1b" , "3l_onZ_2b",
-                      ],
-                      "lep_flav_lst" : ["eee" , "eem" , "emm", "mmm"],
-                      "appl_lst"     : ["isSR_3l", "isAR_3l"],
-                  },
-                  "exactly_4j" : {
-                      "lep_chan_lst" : [
-                          "3l_p_offZ_1b" , "3l_m_offZ_1b" , "3l_p_offZ_2b" , "3l_m_offZ_2b" , "3l_onZ_1b" , "3l_onZ_2b",
-                      ],
-                      "lep_flav_lst" : ["eee" , "eem" , "emm", "mmm"],
-                      "appl_lst"     : ["isSR_3l", "isAR_3l"],
-                  },
-                  "atleast_5j" : {
-                      "lep_chan_lst" : [
-                          "3l_p_offZ_1b" , "3l_m_offZ_1b" , "3l_p_offZ_2b" , "3l_m_offZ_2b" , "3l_onZ_1b" , "3l_onZ_2b",
-                      ],
-                      "lep_flav_lst" : ["eee" , "eem" , "emm", "mmm"],
-                      "appl_lst"     : ["isSR_3l", "isAR_3l"],
-                  },
-              },
+              #"2l" : {
+              #    "exactly_4j" : {
+              #        "lep_chan_lst" : ["2lss_p" , "2lss_m", "2lss_4t_p", "2lss_4t_m"],
+              #        "lep_flav_lst" : ["ee" , "em" , "mm"],
+              #        "appl_lst"     : ["isSR_2lSS" , "isAR_2lSS"] + (["isAR_2lSS_OS"] if isData else []),
+              #    },
+              #    "exactly_5j" : {
+              #        "lep_chan_lst" : ["2lss_p" , "2lss_m", "2lss_4t_p", "2lss_4t_m"],
+              #        "lep_flav_lst" : ["ee" , "em" , "mm"],
+              #        "appl_lst"     : ["isSR_2lSS" , "isAR_2lSS"] + (["isAR_2lSS_OS"] if isData else []),
+              #    },
+              #    "exactly_6j" : {
+              #        "lep_chan_lst" : ["2lss_p" , "2lss_m", "2lss_4t_p", "2lss_4t_m"],
+              #        "lep_flav_lst" : ["ee" , "em" , "mm"],
+              #        "appl_lst"     : ["isSR_2lSS" , "isAR_2lSS"] + (["isAR_2lSS_OS"] if isData else []),
+              #    },
+              #    "atleast_7j" : {
+              #        "lep_chan_lst" : ["2lss_p" , "2lss_m", "2lss_4t_p", "2lss_4t_m"],
+              #        "lep_flav_lst" : ["ee" , "em" , "mm"],
+              #        "appl_lst"     : ["isSR_2lSS" , "isAR_2lSS"] + (["isAR_2lSS_OS"] if isData else []),
+              #    },
+              #},
+              #"3l" : {
+              #    "exactly_2j" : {
+              #        "lep_chan_lst" : [
+              #            "3l_p_offZ_1b" , "3l_m_offZ_1b" , "3l_p_offZ_2b" , "3l_m_offZ_2b" , "3l_onZ_1b" , "3l_onZ_2b",
+              #        ],
+              #        "lep_flav_lst" : ["eee" , "eem" , "emm", "mmm"],
+              #        "appl_lst"     : ["isSR_3l", "isAR_3l"],
+              #    },
+              #    "exactly_3j" : {
+              #        "lep_chan_lst" : [
+              #            "3l_p_offZ_1b" , "3l_m_offZ_1b" , "3l_p_offZ_2b" , "3l_m_offZ_2b" , "3l_onZ_1b" , "3l_onZ_2b",
+              #        ],
+              #        "lep_flav_lst" : ["eee" , "eem" , "emm", "mmm"],
+              #        "appl_lst"     : ["isSR_3l", "isAR_3l"],
+              #    },
+              #    "exactly_4j" : {
+              #        "lep_chan_lst" : [
+              #            "3l_p_offZ_1b" , "3l_m_offZ_1b" , "3l_p_offZ_2b" , "3l_m_offZ_2b" , "3l_onZ_1b" , "3l_onZ_2b",
+              #        ],
+              #        "lep_flav_lst" : ["eee" , "eem" , "emm", "mmm"],
+              #        "appl_lst"     : ["isSR_3l", "isAR_3l"],
+              #    },
+              #    "atleast_5j" : {
+              #        "lep_chan_lst" : [
+              #            "3l_p_offZ_1b" , "3l_m_offZ_1b" , "3l_p_offZ_2b" , "3l_m_offZ_2b" , "3l_onZ_1b" , "3l_onZ_2b",
+              #        ],
+              #        "lep_flav_lst" : ["eee" , "eem" , "emm", "mmm"],
+              #        "appl_lst"     : ["isSR_3l", "isAR_3l"],
+              #    },
+              #},
               "4l" : {
                       "exactly_2j" : {
                           "lep_chan_lst" : ["4l"],
@@ -722,6 +863,13 @@ class AnalysisProcessor(processor.ProcessorABC):
                           "lep_flav_lst" : ["llll"], # Not keeping track of these separately
                           "appl_lst"     : ["isSR_4l"],
                       },
+
+                      "atleast_0j" : {
+                          "lep_chan_lst" : ["4l_wwz_sf_A","4l_wwz_sf_B","4l_wwz_sf_C","4l_wwz_of_1","4l_wwz_of_2","4l_wwz_of_3","4l_wwz_of_4"],
+                          "lep_flav_lst" : ["llll"], # Not keeping track of these separately
+                          "appl_lst"     : ["isSR_4l"],
+                      },
+
               },
             }
 
@@ -891,6 +1039,8 @@ class AnalysisProcessor(processor.ProcessorABC):
                                         eft_coeffs_cut = eft_coeffs[all_cuts_mask] if eft_coeffs is not None else None
                                         eft_w2_coeffs_cut = eft_w2_coeffs[all_cuts_mask] if eft_w2_coeffs is not None else None
 
+                                        print("This:",dense_axis_name,ch_name)
+                                        print("indeed")
 
                                         # Fill the histos
                                         axes_fill_info_dict = {
@@ -909,6 +1059,7 @@ class AnalysisProcessor(processor.ProcessorABC):
                                         if ((("j0" in dense_axis_name) and ("lj0pt" not in dense_axis_name)) & ("0j" in ch_name)): continue
                                         if (("ptz" in dense_axis_name) & ("onZ" not in lep_chan)): continue
                                         if ((dense_axis_name in ["o0pt","b0pt","bl0pt"]) & ("CR" in ch_name)): continue
+                                        if ((dense_axis_name in ["b0pt","bl0pt"]) & ("4l_wwz" in ch_name)): continue
 
                                         hout[dense_axis_name].fill(**axes_fill_info_dict)
 

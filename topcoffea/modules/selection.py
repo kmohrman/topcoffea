@@ -495,7 +495,7 @@ def get_wwz_candidates(lep_collection):
 
 # Do WWZ pre selection, construct event level mask
 # Convenience function around get_wwz_candidates() and get_z_candidate_mask()
-def get_wwz_preselection_mask(lep_collection):
+def attach_wwz_preselection_mask(events,lep_collection):
 
     leps_from_z_candidate_ptordered, leps_not_z_candidate_ptordered = get_wwz_candidates(lep_collection)
 
@@ -511,12 +511,18 @@ def get_wwz_preselection_mask(lep_collection):
     os_mask = ak.any(((leps_not_z_candidate_ptordered[:,0:1].pdgId)*(leps_not_z_candidate_ptordered[:,1:2].pdgId)<0),axis=1) # Use ak.any() here so that instead of e.g [[None],None,...] we have [False,None,...]
     os_mask = ak.fill_none(os_mask,False) # Replace the None with False in the mask just to make it easier to think about
 
+    # Build a mask for same flavor W lepton candidates
+    sf_mask = ak.any((abs(leps_not_z_candidate_ptordered[:,0:1].pdgId) == abs(leps_not_z_candidate_ptordered[:,1:2].pdgId)),axis=1) # Use ak.any() here so that instead of e.g [[None],None,...] we have [False,None,...]
+    sf_mask = ak.fill_none(sf_mask,False) # Replace the None with False in the mask just to make it easier to think about
+
     # Build a mask that checks if the z candidates are close enough to the z
     z_mass = (leps_from_z_candidate_ptordered[:,0:1]+leps_from_z_candidate_ptordered[:,1:2]).mass
     z_mass_mask = (abs((leps_from_z_candidate_ptordered[:,0:1]+leps_from_z_candidate_ptordered[:,1:2]).mass-91.2) < 10.0)
     z_mass_mask = ak.fill_none(ak.any(z_mass_mask,axis=1),False) # Make sure None entries are false
 
-    # The final mask
-    mask = (pt_mask & os_mask & z_mass_mask)
+    # The final preselection mask
+    wwz_presel_mask = (pt_mask & os_mask & z_mass_mask)
 
-    return mask
+    # Attach to the lepton objects
+    events["wwz_presel_sf"] = (wwz_presel_mask & sf_mask)
+    events["wwz_presel_of"] = (wwz_presel_mask & ~sf_mask)
