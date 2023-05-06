@@ -22,6 +22,7 @@ from topcoffea.modules.HistEFT import HistEFT
 from topcoffea.modules.paths import topcoffea_path
 import topcoffea.modules.eft_helper as efth
 
+from coffea.nanoevents.methods import vector
 
 # Takes strings as inputs, constructs a string for the full channel name
 # Try to construct a channel name like this: [n leptons]_[lepton flavors]_[p or m charge]_[on or off Z]_[n b jets]_[n jets]
@@ -78,6 +79,9 @@ class AnalysisProcessor(processor.ProcessorABC):
             "o0pt"    : HistEFT("Events", wc_names_lst, hist.Cat("sample", "sample"), hist.Cat("channel", "channel"), hist.Cat("systematic", "Systematic Uncertainty"),hist.Cat("appl", "AR/SR"), hist.Bin("o0pt",    "Leading l or b jet $p_{T}$ (GeV)", 10, 0, 500)),
             "bl0pt"   : HistEFT("Events", wc_names_lst, hist.Cat("sample", "sample"), hist.Cat("channel", "channel"), hist.Cat("systematic", "Systematic Uncertainty"),hist.Cat("appl", "AR/SR"), hist.Bin("bl0pt",   "Leading (b+l) $p_{T}$ (GeV)", 10, 0, 500)),
             "lj0pt"   : HistEFT("Events", wc_names_lst, hist.Cat("sample", "sample"), hist.Cat("channel", "channel"), hist.Cat("systematic", "Systematic Uncertainty"),hist.Cat("appl", "AR/SR"), hist.Bin("lj0pt",   "Leading pt of pair from l+j collection (GeV)", 12, 0, 600)),
+
+            "mt2"   : HistEFT("Events", wc_names_lst, hist.Cat("sample", "sample"), hist.Cat("channel", "channel"), hist.Cat("systematic", "Systematic Uncertainty"),hist.Cat("appl", "AR/SR"), hist.Bin("mt2",   "mt2", 10, 0, 100)),
+            "pt4l"  : HistEFT("Events", wc_names_lst, hist.Cat("sample", "sample"), hist.Cat("channel", "channel"), hist.Cat("systematic", "Systematic Uncertainty"),hist.Cat("appl", "AR/SR"), hist.Bin("pt4l",   "pt(l0+l1+l2+l4)", 10, 0, 500)),
         })
 
         # Set the list of hists to fill
@@ -509,89 +513,60 @@ class AnalysisProcessor(processor.ProcessorABC):
             of_3 = ak.fill_none(ak.any((w_candidates_mll > 60.0) & (w_candidates_mll < 100.0),axis=1),False)
             of_4 = ak.fill_none(ak.any((w_candidates_mll > 100.0),axis=1),False)
 
-
-            ### Trying to get mt2
-            #print("pt",leps_not_z_candidate_ptordered.pt)
-            #print("px",leps_not_z_candidate_ptordered.px)
-            #print("py",leps_not_z_candidate_ptordered.py)
-            #print("mass",leps_not_z_candidate_ptordered.mass)
-            #print("MET",met.px)
-            #print("MET",met.py)
-            #print("0s",np.zeros_like(events['event']))
-
-            #w_lep0 = leps_not_z_candidate_ptordered[:,0:1]
-            #w_lep1 = leps_not_z_candidate_ptordered[:,1:2]
-
-            #print("w_lep0",w_lep0.pt)
-            #print("w_lep0.pz,w_lep0.px",w_lep0.pz,w_lep0.px)
-
-            ## TEst boost
-            #rest_WW = w_lep0 + w_lep1 + met
-            #print("rest_WW",rest_WW)
-            #for i,x in enumerate(rest_WW):
-            #    print(i,x,type(x))
-            #print("past this!!!")
-            ##beta_from_miss_reverse = rest_WW.boostvec
-            ##beta_from_miss_reverse = (w_lep0+w_lep1).boostvec
-            #print("met phi",met.phi)
-            #print("met pt",met.pt)
-            #print("met type",type(met))
-            #print("lep type",type(w_lep0))
-            #print("lep type + ",type(w_lep0 + w_lep1))
-            #print("lep met type + ",type(w_lep0 + w_lep1 + met))
-            #print("lep type add ",type(w_lep0.add(w_lep1)))
-            #ll = w_lep0.add(w_lep1)
+            ## Double checking the selection
+            #for i,x in enumerate(leps_from_z_candidate_ptordered):
+            #    if events.wwz_presel_of[i] or events.wwz_presel_sf[i]:
+            #        print("\n",i)
+            #        print("events.wwz_presel_of",events.wwz_presel_of[i])
+            #        print("events.wwz_presel_sf",events.wwz_presel_sf[i])
+            #        print("leps_from_z_candidate_ptordered.pt:",leps_from_z_candidate_ptordered.pt[i])
+            #        print("leps_not_z_candidate_ptordered.pt :",leps_not_z_candidate_ptordered.pt[i])
+            #        print("combos",(l0[i]+l1[i]).mass,(l0[i]+l2[i]).mass,(l0[i]+l3[i]).mass,(l1[i]+l2[i]).mass,(l1[i]+l3[i]).mass,(l2[i]+l3[i]).mass)
+            #        print("pt:",l0[i].pt,l1[i].pt,l2[i].pt,l3[i].pt)
+            #        print("pdg:",l0[i].pdgId,l1[i].pdgId,l2[i].pdgId,l3[i].pdgId)
+            #        print("met:",met.pt[i])
+            #        print("mllW:",(leps_not_z_candidate_ptordered[i,0]+leps_not_z_candidate_ptordered[i,1]).mass)
+            #        print("ptl4:",ptl4[i])
+            #        print("of 1234:",of_1[i],of_2[i],of_3[i],of_4[i])
+            #        print("sf ABC :",sf_A[i],sf_B[i],sf_C[i])
             #print("this")
-            ##beta_from_miss_reverse = (met).boostvec
-            ##print("beta_from_miss_reverse",beta_from_miss_reverse)
-            ##print("past this!!!")
-            ##exit()
+            #exit()
 
-            #from mt2 import mt2
-            #mt2_var = mt2(
-            #    w_lep0.mass, w_lep0.px, w_lep0.py,
-            #    w_lep1.mass, w_lep1.px, w_lep1.py,
-            #    met.px, met.py,
-            #    np.zeros_like(events['event']), np.zeros_like(events['event']),
-            #)
 
-            #test_142 = mt2(
-            #    -0.0612,162,-80,
-            #    -0.047,-5.87,-31.5,
-            #    -202.6769847192207,206.4343185321238,
-            #    0,0,
-            #)
+            w_lep0 = leps_not_z_candidate_ptordered[:,0:1]
+            w_lep1 = leps_not_z_candidate_ptordered[:,1:2]
 
-            #test_255 = mt2(
-            #    0.106,262,-155,
-            #    0.106,12.2,66.4,
-            #    280.18764540073647,49.06672520867423,
-            #    0,0
-            #)
+            nevents = len(np.zeros_like(met))
 
-            #test_gh = mt2(
-            #    0,-42.017340486,-146.365340528,
-            #    0.087252259,-9.625614206,145.757295514,
-            #    -16.692279406,-14.730240471,
-            #    0,0
-            #)
+            misspart = ak.zip(
+                {
+                    "pt": met.pt,
+                    "eta": np.pi / 2,
+                    #"eta": np.full(nevents, np.pi/2),
+                    "phi": met.phi,
+                    "mass": np.full(nevents, 0),
+                },
+                with_name="PtEtaPhiMLorentzVector",
+                behavior=vector.behavior,
+            )
 
-            ##jfor i,x in enumerate(np.zeros_like(events['event'])):
-            ##j    print("i",i)
-            ##j    print("\t l pt",l_fo_conept_sorted_padded[i].pt)
-            ##j    print("\t l px",l_fo_conept_sorted_padded[i].px)
-            ##j    print("\t l ms",l_fo_conept_sorted_padded[i].mass)
-            ##j    print("\t m pt",m_fo[i].pt)
-            ##j    print("\t m px",m_fo[i].px)
-            ##j    print("\t m ms",m_fo[i].mass)
-            ##j    print("\t e pt",e_fo[i].pt)
-            ##j    print("\t e px",e_fo[i].px)
-            ##j    print("\t e ms",e_fo[i].mass)
 
-            #print("test 142",test_142)
-            #print("test 255",test_255)
-            #print("test gh ",test_gh)
-            #print("there")
+            rest_WW = w_lep0 + w_lep1 + misspart
+
+            beta_from_miss_reverse = rest_WW.boostvec
+            beta_from_miss = beta_from_miss_reverse.negative()
+            w_lep0_boosted = w_lep0.boost(beta_from_miss)
+            w_lep1_boosted = w_lep1.boost(beta_from_miss)
+            misspart_boosted = misspart.boost(beta_from_miss)
+
+            from mt2 import mt2
+            mt2_var = mt2(
+                w_lep0_boosted.mass, w_lep0_boosted.px, w_lep0_boosted.py,
+                w_lep1_boosted.mass, w_lep1_boosted.px, w_lep1_boosted.py,
+                misspart_boosted.px, misspart_boosted.py,
+                np.zeros_like(events['event']), np.zeros_like(events['event']),
+            )
+
 
             #for i,x in enumerate(np.zeros_like(events['event'])):
             #    print("i",i)
@@ -617,8 +592,6 @@ class AnalysisProcessor(processor.ProcessorABC):
             #        print("\t","w_lep1.phi",w_lep1[i].phi)
             #        print("\t","met",met[i].pt)
             #        print("\t","met.phi",met[i].phi)
-
-
             #print("this")
             ##exit()
 
@@ -790,6 +763,13 @@ class AnalysisProcessor(processor.ProcessorABC):
             varnames["o0pt"]    = o0pt
             varnames["lj0pt"]   = lj0pt
 
+            #varnames["mt2"] = mt2_var
+            varnames["pt4l"] = ptl4
+            #print("mt2_var",mt2_var)
+            #print("ptl4",ptl4)
+            #print("this")
+            #exit()
+
 
             ########## Fill the histograms ##########
 
@@ -848,21 +828,21 @@ class AnalysisProcessor(processor.ProcessorABC):
               #    },
               #},
               "4l" : {
-                      "exactly_2j" : {
-                          "lep_chan_lst" : ["4l"],
-                          "lep_flav_lst" : ["llll"], # Not keeping track of these separately
-                          "appl_lst"     : ["isSR_4l"],
-                      },
-                      "exactly_3j" : {
-                          "lep_chan_lst" : ["4l"],
-                          "lep_flav_lst" : ["llll"], # Not keeping track of these separately
-                          "appl_lst"     : ["isSR_4l"],
-                      },
-                      "atleast_4j" : {
-                          "lep_chan_lst" : ["4l"],
-                          "lep_flav_lst" : ["llll"], # Not keeping track of these separately
-                          "appl_lst"     : ["isSR_4l"],
-                      },
+                      #"exactly_2j" : {
+                      #    "lep_chan_lst" : ["4l"],
+                      #    "lep_flav_lst" : ["llll"], # Not keeping track of these separately
+                      #    "appl_lst"     : ["isSR_4l"],
+                      #},
+                      #"exactly_3j" : {
+                      #    "lep_chan_lst" : ["4l"],
+                      #    "lep_flav_lst" : ["llll"], # Not keeping track of these separately
+                      #    "appl_lst"     : ["isSR_4l"],
+                      #},
+                      #"atleast_4j" : {
+                      #    "lep_chan_lst" : ["4l"],
+                      #    "lep_flav_lst" : ["llll"], # Not keeping track of these separately
+                      #    "appl_lst"     : ["isSR_4l"],
+                      #},
 
                       "atleast_0j" : {
                           "lep_chan_lst" : ["4l_wwz_sf_A","4l_wwz_sf_B","4l_wwz_sf_C","4l_wwz_of_1","4l_wwz_of_2","4l_wwz_of_3","4l_wwz_of_4"],
@@ -1038,9 +1018,6 @@ class AnalysisProcessor(processor.ProcessorABC):
                                         weights_flat = weight[all_cuts_mask]
                                         eft_coeffs_cut = eft_coeffs[all_cuts_mask] if eft_coeffs is not None else None
                                         eft_w2_coeffs_cut = eft_w2_coeffs[all_cuts_mask] if eft_w2_coeffs is not None else None
-
-                                        print("This:",dense_axis_name,ch_name)
-                                        print("indeed")
 
                                         # Fill the histos
                                         axes_fill_info_dict = {
