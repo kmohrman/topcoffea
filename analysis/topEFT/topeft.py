@@ -24,6 +24,8 @@ import topcoffea.modules.eft_helper as efth
 
 from coffea.nanoevents.methods import vector
 
+from mt2 import mt2
+
 # Takes strings as inputs, constructs a string for the full channel name
 # Try to construct a channel name like this: [n leptons]_[lepton flavors]_[p or m charge]_[on or off Z]_[n b jets]_[n jets]
     # chan_str should look something like "3l_p_offZ_1b", NOTE: This function assumes nlep comes first
@@ -559,13 +561,13 @@ class AnalysisProcessor(processor.ProcessorABC):
             w_lep1_boosted = w_lep1.boost(beta_from_miss)
             misspart_boosted = misspart.boost(beta_from_miss)
 
-            from mt2 import mt2
             mt2_var = mt2(
                 w_lep0_boosted.mass, w_lep0_boosted.px, w_lep0_boosted.py,
                 w_lep1_boosted.mass, w_lep1_boosted.px, w_lep1_boosted.py,
                 misspart_boosted.px, misspart_boosted.py,
                 np.zeros_like(events['event']), np.zeros_like(events['event']),
             )
+            mt2_mask = ak.fill_none(ak.any((mt2_var>25.0),axis=1),False)
 
 
             #for i,x in enumerate(np.zeros_like(events['event'])):
@@ -659,9 +661,9 @@ class AnalysisProcessor(processor.ProcessorABC):
             selections.add("4l_wwz_sf_A", (events.is4l & bmask_exactly0med & pass_trg & events.wwz_presel_sf & w_candidates_mll_far_from_z & sf_A))
             selections.add("4l_wwz_sf_B", (events.is4l & bmask_exactly0med & pass_trg & events.wwz_presel_sf & w_candidates_mll_far_from_z & sf_B))
             selections.add("4l_wwz_sf_C", (events.is4l & bmask_exactly0med & pass_trg & events.wwz_presel_sf & w_candidates_mll_far_from_z & sf_C))
-            selections.add("4l_wwz_of_1", (events.is4l & bmask_exactly0med & pass_trg & events.wwz_presel_of & of_1))
-            selections.add("4l_wwz_of_2", (events.is4l & bmask_exactly0med & pass_trg & events.wwz_presel_of & of_2))
-            selections.add("4l_wwz_of_3", (events.is4l & bmask_exactly0med & pass_trg & events.wwz_presel_of & of_3))
+            selections.add("4l_wwz_of_1", (events.is4l & bmask_exactly0med & pass_trg & events.wwz_presel_of & of_1 & mt2_mask))
+            selections.add("4l_wwz_of_2", (events.is4l & bmask_exactly0med & pass_trg & events.wwz_presel_of & of_2 & mt2_mask))
+            selections.add("4l_wwz_of_3", (events.is4l & bmask_exactly0med & pass_trg & events.wwz_presel_of & of_3 & mt2_mask))
             selections.add("4l_wwz_of_4", (events.is4l & bmask_exactly0med & pass_trg & events.wwz_presel_of & of_4))
 
             # Lep flavor selection
